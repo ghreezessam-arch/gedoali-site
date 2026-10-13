@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<title>gedoali — الحق البيض</title>
+<meta name="theme-color" content="#0F2E1E">
+<meta name="description" content="لعبة جدو علي: الحق البيض في السلة قبل ما يقع!">
+<meta property="og:title" content="الحق البيض مع جدو علي">
+<meta property="og:description" content="لعبة خفيفة من جدو علي — كل ما تكسب، البيض بيقع أسرع.">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--forest:#0F2E1E;--forest2:#173F2A;--lime:#88C441;--cream:#F2EEE4}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:var(--forest);color:#fff;font-family:"Readex Pro",Tahoma,sans-serif;overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none}
+canvas{display:block;width:100vw;height:100vh;height:100dvh}
+.hud{position:fixed;top:calc(12px + env(safe-area-inset-top,0px));left:16px;right:16px;display:flex;justify-content:space-between;align-items:center;pointer-events:none;z-index:2}
+.hud .sc{font-weight:700;font-size:30px;line-height:1;font-variant-numeric:tabular-nums}
+.hud .lv{font-size:13px;color:var(--lime);font-weight:500;margin-top:4px}
+.hud .lives{display:flex;gap:6px;direction:ltr}
+.hud .lives i{width:16px;height:21px;border-radius:50% 50% 50% 50%/60% 60% 40% 40%;background:var(--cream);display:block;transition:opacity .3s,transform .3s}
+.hud .lives i.off{opacity:.18;transform:scale(.8)}
+.mute{position:fixed;bottom:calc(14px + env(safe-area-inset-bottom,0px));left:14px;z-index:3;background:rgba(255,255,255,.08);border:0;color:#fff;width:40px;height:40px;border-radius:50%;font-size:18px;cursor:pointer}
+.scr{position:fixed;inset:0;z-index:5;display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:32px 24px calc(32px + env(safe-area-inset-bottom,0px));background:rgba(15,46,30,.94)}
+.scr.on{display:flex}
+.scr svg{width:min(120px,30vw);height:auto;fill:var(--lime)}
+.scr h1{margin-top:20px;font-size:clamp(40px,11vw,58px);font-weight:700;color:var(--lime);line-height:1.1}
+.scr p{margin-top:12px;font-size:17px;line-height:1.7;color:rgba(255,255,255,.8);max-width:30ch}
+.scr .big{font-size:72px;font-weight:700;line-height:1;margin-top:14px;font-variant-numeric:tabular-nums}
+.scr .best{margin-top:6px;font-size:15px;color:var(--lime)}
+.btn{margin-top:28px;border:0;border-radius:16px;background:var(--lime);color:var(--forest);font:inherit;font-weight:700;font-size:20px;padding:16px 44px;cursor:pointer;min-width:220px}
+.btn.ghost{margin-top:12px;background:transparent;color:#fff;border:1.5px solid rgba(255,255,255,.3);font-weight:500;font-size:17px;padding:13px 30px;text-decoration:none;display:inline-block}
+.how{margin-top:18px;font-size:13px;color:rgba(255,255,255,.55)}
+.toast{position:fixed;top:38%;left:50%;transform:translate(-50%,-50%) scale(.8);z-index:4;font-weight:700;font-size:clamp(34px,10vw,52px);color:var(--lime);opacity:0;pointer-events:none;transition:opacity .25s,transform .35s cubic-bezier(.2,.8,.2,1);white-space:nowrap;text-shadow:0 6px 24px rgba(0,0,0,.35)}
+.form{margin-top:18px;width:100%;max-width:340px;display:grid;gap:10px;text-align:right}
+.form input,.form select{width:100%;font:inherit;font-size:17px;color:#fff;background:rgba(255,255,255,.07);border:1.5px solid rgba(255,255,255,.18);border-radius:14px;padding:13px 14px;outline:none;appearance:none;-webkit-appearance:none}
+.form select option{color:#0F2E1E}
+.form input:focus,.form select:focus{border-color:var(--lime)}
+.form input.ph{direction:ltr;text-align:right;letter-spacing:.04em}
+.form label.ck{display:flex;gap:10px;align-items:flex-start;font-size:13px;line-height:1.6;color:rgba(255,255,255,.75);cursor:pointer}
+.form label.ck input{width:20px;height:20px;flex:none;margin-top:2px;accent-color:#88C441;appearance:auto;-webkit-appearance:auto}
+.err{min-height:20px;font-size:14px;color:#F0907E;margin-top:4px}
+.me{margin-top:14px;font-size:15px;color:rgba(255,255,255,.8)}.me b{color:var(--lime)}
+.me button{background:none;border:0;color:rgba(255,255,255,.55);font:inherit;font-size:13px;text-decoration:underline;margin-inline-start:8px;cursor:pointer}
+.lb{margin-top:20px;width:100%;max-width:300px;font-size:14px}
+.lb h3{font-size:13px;font-weight:500;color:var(--lime);letter-spacing:.04em;margin-bottom:6px}
+.lb ol{list-style:none;display:grid;gap:4px}
+.lb li{display:flex;justify-content:space-between;padding:6px 12px;border-radius:10px;background:rgba(255,255,255,.05)}
+.lb li b{color:var(--lime);font-variant-numeric:tabular-nums}
+.saved{margin-top:8px;font-size:13px;color:var(--lime);min-height:18px}
+.scr.tall{justify-content:flex-start;overflow-y:auto;padding-top:calc(36px + env(safe-area-inset-top,0px))}
+.toast.on{opacity:1;transform:translate(-50%,-50%) scale(1)}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div class="hud" id="hud" style="display:none"><div><div class="sc" id="sc">0</div><div class="lv" id="lv">المرحلة ١</div></div><div class="lives" id="lives"><i></i><i></i><i></i></div></div>
+<button class="mute" id="mute" aria-label="الصوت">🔊</button>
+<div class="toast" id="toast"></div>
+
+<section class="scr on tall" id="s-start">
+  <svg viewBox="0 0 554 752" aria-hidden="true"><path class="mp" fill-rule="evenodd"/></svg>
+  <h1>الحق البيض!</h1>
+  <p>جدو علي بيرمي البيض من فوق — امسكه في السلة قبل ما يقع. كل ما تعدّي مرحلة البيض بيقع أسرع.</p>
+  <div class="form" id="reg">
+    <input id="f-name" placeholder="اسمك" autocomplete="name" maxlength="40">
+    <input id="f-phone" class="ph" placeholder="رقم الموبايل" inputmode="tel" autocomplete="tel" maxlength="14">
+    <select id="f-area"><option value="">منطقتك</option></select>
+    <label class="ck"><input type="checkbox" id="f-opt"> ابعتولي عروض جدو علي على واتساب</label>
+    <div class="err" id="f-err"></div>
+  </div>
+  <div class="me" id="me" style="display:none">بتلعب باسم <b id="me-n"></b><button id="me-x">مش أنا</button></div>
+  <button class="btn" id="b-start">يلا نلعب</button>
+  <div class="how">اسحب بصباعك أو حرّك الماوس · الأسهم على الكيبورد</div>
+  <div class="lb" id="lb1"></div>
+</section>
+
+<section class="scr" id="s-over">
+  <svg viewBox="0 0 554 752" aria-hidden="true"><path class="mp" fill-rule="evenodd"/></svg>
+  <p id="o-msg">الحق! البيض وقع</p>
+  <div class="big" id="o-sc">0</div>
+  <div class="best" id="o-best"></div>
+  <div class="saved" id="o-saved"></div>
+  <button class="btn" id="b-again">العب تاني</button>
+  <a class="btn ghost" href="/order">اطلب بيض بجد من جدو علي</a>
+  <div class="lb" id="lb2"></div>
+</section>
+
+<script>
+(function(){
+const cv=document.getElementById('c'),cx=cv.getContext('2d');
+const $=id=>document.getElementById(id);
+const AR=n=>String(n).replace(/\d/g,d=>'٠١٢٣٤٥٦٧٨٩'[d]);
+const MD='M298.0 751.3C290.3 750.1 291.0 751.8 291.0 733.7C291.0 719.9 290.1 709.4 284.3 661.8C280.7 631.1 278.0 605.7 278.4 605.3C278.8 604.8 285.1 604.5 292.3 604.5C313.5 604.5 320.1 608.8 325.9 626.2C331.2 642.0 333.0 653.9 333.0 672.2C333.0 681.1 333.4 688.0 333.8 687.4C334.3 686.9 340.0 666.2 346.5 641.5C353.0 616.8 358.6 595.6 359.1 594.5C359.5 593.2 370.7 586.4 389.4 576.0C405.7 566.9 419.0 559.3 419.0 559.0C419.0 558.5 355.3 552.1 342.0 551.3C335.8 550.9 330.9 551.6 313.0 555.4C278.9 562.6 256.4 566.3 246.5 566.4C238.3 566.4 236.2 566.0 223.2 561.7C198.6 553.4 158.2 536.8 141.6 528.2C135.7 525.1 132.6 522.2 117.6 505.9L100.4 487.2L90.0 443.2C79.7 400.0 79.5 399.3 78.9 405.3C77.2 421.3 72.6 437.5 69.3 438.7C68.3 439.0 65.5 440.9 63.0 442.9L58.6 446.5L47.5 446.5C34.3 446.5 27.8 444.0 20.9 436.2C12.9 427.1 9.5 417.6 5.6 393.5C-0.2 357.5 -1.1 338.3 2.1 316.1C7.8 275.4 19.0 257.0 38.2 257.0C55.1 257.0 71.4 267.7 76.1 282.0C78.3 288.7 79.0 289.0 91.9 289.0C99.8 288.9 104.0 288.5 105.2 287.6C106.3 286.8 111.4 271.4 119.3 244.8L131.7 203.2L151.2 167.7L170.8 132.3L161.4 93.9C155.6 70.5 152.2 54.5 152.5 53.1C153.5 49.2 168.6 34.8 176.5 30.3C195.3 19.5 220.5 14.0 245.8 15.3C256.0 15.8 257.4 15.6 274.0 11.4C320.1 0.0 353.8 -2.8 375.5 3.0C394.2 8.0 432.1 25.5 467.4 45.5C492.2 59.6 492.3 59.6 508.4 95.7C523.6 129.7 533.9 157.3 538.6 176.5C541.0 186.6 541.7 191.4 540.0 187.3C538.8 184.4 524.6 177.2 509.6 172.1C499.6 168.6 484.9 165.0 470.6 162.5L466.7 161.9L467.3 170.6C467.6 175.3 468.1 179.4 468.3 179.7C468.7 180.0 473.6 181.0 506.0 187.1C528.3 191.3 535.5 198.0 543.4 222.4C545.6 229.1 546.1 232.9 546.5 246.4C547.2 265.2 547.4 267.4 549.4 280.0C554.0 308.3 554.3 314.3 552.5 349.5C551.0 379.0 550.2 387.0 544.9 425.0C537.0 481.3 533.9 492.9 520.3 519.0C505.1 548.0 494.3 559.8 457.8 586.8C444.2 596.9 432.9 605.9 432.6 606.8C432.4 607.7 431.2 618.2 429.9 630.0C427.3 654.5 426.0 658.4 413.0 680.0C388.1 721.5 359.4 744.5 325.3 750.4C317.2 751.9 304.1 752.3 298.0 751.3ZM427.4 461.8C421.7 452.0 409.7 440.6 400.1 435.8C393.8 432.6 393.0 432.5 382.5 432.6C372.5 432.6 370.5 433.0 360.7 436.3C350.2 439.9 327.4 450.7 328.4 451.7C328.6 452.0 329.8 451.7 330.9 451.1C335.6 448.5 360.2 443.1 371.5 442.0C394.4 439.9 410.7 445.1 423.3 458.5C427.7 463.1 428.6 463.9 427.4 461.8ZM498.9 421.5C502.9 417.6 501.4 404.4 494.9 386.9C491.2 376.9 489.6 374.2 476.2 355.7C460.1 333.6 448.2 320.3 440.5 315.9C434.8 312.6 429.0 312.2 417.9 314.3L411.3 315.6L407.5 312.3C396.5 302.8 379.7 300.2 360.8 305.0C350.8 307.6 312.2 324.8 293.7 335.0C277.1 344.2 279.2 341.3 274.4 362.0C271.4 375.1 271.6 377.3 276.1 377.8C277.8 378.0 280.7 376.2 286.5 371.4C290.8 367.8 297.1 363.5 300.3 361.8C309.8 357.0 358.9 344.2 376.2 342.0L383.5 341.1L394.0 346.0C407.8 352.3 415.3 354.3 427.1 354.4C436.5 354.5 436.7 354.6 440.6 357.9C453.5 369.1 474.9 396.5 484.6 414.1C491.0 425.8 493.2 427.0 498.9 421.5ZM471.0 421.6C443.6 395.5 429.7 388.0 400.5 383.5C394.4 382.6 385.0 380.7 379.5 379.3C360.3 374.5 334.4 375.3 316.4 381.4C310.9 383.2 303.8 385.1 300.5 385.5C296.0 386.1 295.0 386.5 296.5 387.1C300.0 388.5 310.6 388.1 315.1 386.4C318.6 385.1 324.8 384.6 345.0 384.3C369.4 383.8 371.2 383.9 386.5 386.5C415.0 391.4 425.0 395.2 449.5 410.8C464.0 420.0 475.2 425.6 471.0 421.6ZM34.1 403.9C35.6 401.1 34.8 393.7 31.7 380.5C26.7 359.4 25.5 338.8 28.6 326.6C30.4 319.5 38.4 302.2 43.0 295.6C44.7 293.1 45.7 291.0 45.3 291.1C44.9 291.1 39.8 295.1 34.0 299.9C22.4 309.5 19.2 314.1 16.4 325.1C14.5 332.6 14.9 342.0 17.4 346.9C20.8 353.4 23.1 365.2 23.7 379.0C24.2 392.5 25.4 397.3 29.6 403.8C31.4 406.6 32.6 406.6 34.1 403.9ZM57.4 372.9C58.7 372.2 60.4 370.4 61.1 368.8C62.2 366.1 61.9 365.1 57.6 356.9L52.9 347.9L54.1 342.2C55.2 336.5 63.3 312.3 65.1 308.8C66.5 306.1 64.6 306.5 56.0 310.8L48.5 314.5L45.7 324.0C40.3 342.1 39.0 353.2 41.1 363.2C43.1 372.4 49.8 376.3 57.4 372.9ZM469.7 306.4C480.5 298.4 481.5 282.3 471.9 271.0C470.2 269.0 470.0 268.9 470.6 270.5C471.0 271.6 471.5 275.8 471.8 279.8C472.2 286.5 471.9 287.7 469.1 293.5C465.0 301.8 460.1 305.0 450.2 305.8L443.5 306.4L448.0 307.6C454.9 309.6 466.3 308.9 469.7 306.4ZM349.5 293.9C335.7 291.5 329.0 288.4 326.6 283.3C324.0 277.8 323.5 271.2 325.4 266.7C326.2 264.6 326.5 263.2 326.0 263.5C325.5 263.8 324.2 266.6 323.0 269.8C316.6 286.7 327.1 295.6 353.5 295.8L360.5 295.8L349.5 293.9ZM450.6 287.6C451.4 285.5 445.4 273.5 442.3 271.1C440.9 269.9 438.7 269.0 437.4 269.0C434.6 269.0 428.9 273.8 425.9 278.7C423.4 282.7 424.0 283.5 430.0 284.6C431.9 284.9 436.9 286.0 441.0 287.0C450.6 289.3 450.0 289.2 450.6 287.6ZM386.0 277.5C389.0 277.3 393.0 277.1 394.8 277.0C398.9 277.0 398.9 275.4 394.7 269.8C387.9 260.9 382.3 259.2 373.5 263.4C368.7 265.6 357.0 275.3 357.0 277.0C357.0 278.8 366.9 278.9 386.0 277.5ZM528.0 256.0C523.0 246.1 522.0 243.2 522.0 239.0C522.0 236.2 521.3 232.6 520.5 231.0C518.4 226.9 508.7 219.3 501.0 215.6L494.5 212.5L474.1 212.2L453.8 211.8L459.0 219.4C463.9 226.3 464.6 227.0 468.4 227.4C497.7 231.0 499.5 231.6 508.6 240.2C512.5 243.9 519.7 251.7 524.5 257.5C529.4 263.3 533.5 268.0 533.7 268.0C533.9 268.0 531.3 262.6 528.0 256.0ZM338.0 250.5C339.9 248.6 341.2 247.0 340.9 247.0C340.6 247.0 338.9 248.6 337.0 250.5C335.1 252.4 333.8 254.0 334.1 254.0C334.4 254.0 336.1 252.4 338.0 250.5ZM458.3 222.2C452.4 215.1 446.0 205.7 438.9 193.6C427.6 174.4 417.6 164.7 404.8 160.4C395.5 157.3 379.2 158.6 375.8 162.8C374.8 163.9 375.4 163.8 378.0 162.4C380.7 160.9 383.6 160.5 391.0 160.5C399.8 160.5 401.0 160.8 407.1 163.8C418.2 169.4 422.5 174.1 441.5 201.5C451.6 216.2 459.8 227.0 460.6 227.0C461.7 227.0 460.9 225.5 458.3 222.2ZM197.3 211.9C214.1 201.5 230.8 194.7 242.5 193.5C251.1 192.6 280.2 195.4 287.2 197.9C290.3 199.0 296.8 201.7 301.7 204.0C310.4 208.1 310.4 208.1 313.0 206.2C316.2 203.8 320.0 198.2 320.0 195.8C320.0 191.5 296.5 179.5 281.7 176.3C272.5 174.4 258.0 175.1 249.0 177.9C240.3 180.6 205.5 202.5 188.1 216.1C183.5 219.8 187.4 217.9 197.3 211.9ZM226.2 148.5C248.2 137.5 265.3 138.3 310.3 152.5C320.1 155.6 328.4 157.9 328.8 157.6C330.0 156.9 335.5 139.1 334.7 138.4C333.6 137.3 309.0 131.1 297.7 129.0C280.5 125.9 262.6 124.8 248.8 126.0C221.5 128.3 216.4 131.7 198.2 158.8C191.7 168.5 186.0 177.1 185.5 177.9C185.1 178.6 192.1 173.3 201.1 166.1C212.1 157.3 220.4 151.5 226.2 148.5Z';const MASCOT=new Path2D(MD);document.querySelectorAll('.mp').forEach(p=>p.setAttribute('d',MD));
+let W=0,H=0,DPR=1;
+function resize(){DPR=Math.min(window.devicePixelRatio||1,2);W=window.innerWidth;H=window.innerHeight;cv.width=W*DPR;cv.height=H*DPR;cx.setTransform(DPR,0,0,DPR,0,0);if(basket){basket.y=H-basketBottom();basket.x=Math.min(Math.max(basket.x,basket.w/2),W-basket.w/2);}}
+function basketBottom(){return 70+(parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--sab'))||0)}
+
+/* ---------- sound ---------- */
+let ac=null,muted=false;try{muted=localStorage.getItem('gedo_mute')==='1'}catch(e){}
+$('mute').textContent=muted?'🔇':'🔊';
+function tone(f,d,type,vol,slide){if(muted)return;try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();const o=ac.createOscillator(),g=ac.createGain();o.type=type||'sine';o.frequency.setValueAtTime(f,ac.currentTime);if(slide)o.frequency.exponentialRampToValueAtTime(slide,ac.currentTime+d);g.gain.setValueAtTime(vol||.12,ac.currentTime);g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+d);o.connect(g);g.connect(ac.destination);o.start();o.stop(ac.currentTime+d);}catch(e){}}
+const sCatch=()=>tone(660,.12,'triangle',.13,990), sGold=()=>{tone(880,.1,'triangle',.12,1320);setTimeout(()=>tone(1320,.18,'triangle',.1,1760),80)}, sBreak=()=>tone(180,.25,'sawtooth',.08,70), sLevel=()=>{[523,659,784].forEach((f,i)=>setTimeout(()=>tone(f,.15,'triangle',.11),i*90))};
+$('mute').onclick=e=>{e.stopPropagation();muted=!muted;$('mute').textContent=muted?'🔇':'🔊';try{localStorage.setItem('gedo_mute',muted?'1':'0')}catch(e){}};
+
+/* ---------- state ---------- */
+const EGGS=[{c:'#F4F1EA',s:'#D9D2C3'},{c:'#C98B5A',s:'#A86E43'},{c:'#E3CFA9',s:'#C4AD86'}];
+let basket=null,eggs=[],fx=[],score=0,caught=0,level=1,lives=3,state='start',spawnT=0,last=0,shake=0,best=0;
+try{best=+localStorage.getItem('gedo_best')||0}catch(e){}
+const PER_LEVEL=8;
+const API='https://script.google.com/macros/s/AKfycbyt18R0Z8GTg_LBZBIcD5k8cORCZDaK0lO3WXjPQg4sEMNnhw_I-nolTgnJeQ0oxJzb/exec';
+let player=null,t0=0;try{player=JSON.parse(localStorage.getItem('gedo_player')||'null')}catch(e){}
+function normPhone(p){p=String(p||'').replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/\D/g,'');if(p.indexOf('0020')===0)p=p.slice(4);else if(p.indexOf('20')===0&&p.length===12)p=p.slice(2);if(p.length===10&&p[0]==='1')p='0'+p;return p}
+function showMe(){const has=!!player;$('reg').style.display=has?'none':'grid';$('me').style.display=has?'block':'none';if(has)$('me-n').textContent=player.name;}
+$('me-x').onclick=()=>{player=null;try{localStorage.removeItem('gedo_player')}catch(e){};showMe();};
+function readForm(){const name=$('f-name').value.trim(),phone=normPhone($('f-phone').value),area=$('f-area').value;
+  if(name.length<2)return 'اكتب اسمك';if(!/^01[0125]\d{8}$/.test(phone))return 'اكتب رقم موبايل صحيح (11 رقم)';if(!area)return 'اختار منطقتك';
+  player={name,phone,area,optin:$('f-opt').checked};try{localStorage.setItem('gedo_player',JSON.stringify(player))}catch(e){};return null}
+function renderTop(top){const h=top&&top.length?'<h3>أعلى ٥ نتايج</h3><ol>'+top.map((t,i)=>'<li><span>'+AR(i+1)+'. '+String(t.n).replace(/[<&>]/g,'')+'</span><b>'+AR(t.s)+'</b></li>').join('')+'</ol>':'';$('lb1').innerHTML=h;$('lb2').innerHTML=h;}
+function loadTop(){fetch(API+'?game=top').then(r=>r.json()).then(d=>{renderTop(d.top);const s=$('f-area');if(d.areas&&s.options.length<2){d.areas.forEach(a=>{const o=document.createElement('option');o.value=o.textContent=a;s.appendChild(o)});const o=document.createElement('option');o.value='منطقة تانية';o.textContent='منطقة تانية';s.appendChild(o);}}).catch(()=>{const s=$('f-area');if(s.options.length<2){['المعادي','زهراء المعادي','القطامية','المقطم','مدينة نصر','مصر الجديدة','التجمع','الرحاب','مدينتي','الشروق','منطقة تانية'].forEach(a=>{const o=document.createElement('option');o.value=o.textContent=a;s.appendChild(o)})}});}
+function submit(){if(!player)return;$('o-saved').textContent='بنسجّل نتيجتك…';
+  fetch(API,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({type:'game',name:player.name,phone:player.phone,area:player.area,optin:player.optin,score,level,secs:Math.round((performance.now()-t0)/1000)})})
+   .then(()=>{$('o-saved').textContent='✓ نتيجتك اتسجلت باسم '+player.name;setTimeout(loadTop,1500)}).catch(()=>{$('o-saved').textContent='ماقدرناش نسجّل النتيجة — اتأكد من النت'});}
+
+function speed(){return 150+ (level-1)*48}              // px/s fall speed
+function interval(){return Math.max(.38,1.25-(level-1)*.09)} // s between eggs
+function reset(){basket={x:W/2,y:H-basketBottom(),w:Math.min(150,W*.36),tx:W/2};eggs=[];fx=[];score=0;caught=0;level=1;lives=3;spawnT=.6;paintHud();}
+function paintHud(){$('sc').textContent=AR(score);$('lv').textContent='المرحلة '+AR(level);[...$('lives').children].forEach((n,i)=>n.classList.toggle('off',i>=lives));}
+function toast(t){const n=$('toast');n.textContent=t;n.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>n.classList.remove('on'),1100);}
+function spawn(){const r=Math.max(15,Math.min(20,W*.045));const gold=level>=2&&Math.random()<.08;const t=EGGS[(Math.random()*3)|0];eggs.push({x:r+Math.random()*(W-2*r),y:-r*1.4,r,vy:speed()*(.9+Math.random()*.25),rot:(Math.random()-.5)*.6,vr:(Math.random()-.5)*1.5,gold,t});}
+
+/* ---------- input ---------- */
+function setX(px){if(basket)basket.tx=px;}
+cv.addEventListener('pointerdown',e=>setX(e.clientX));
+cv.addEventListener('pointermove',e=>{if(e.pointerType==='mouse'||e.buttons||e.pointerType==='touch')setX(e.clientX)});
+const keys={};addEventListener('keydown',e=>{keys[e.key]=1;if(e.key==='Enter'&&state!=='play'){e.preventDefault();start();}});addEventListener('keyup',e=>keys[e.key]=0);
+
+/* ---------- draw ---------- */
+function drawBg(){cx.fillStyle='#0F2E1E';cx.fillRect(0,0,W,H);
+  cx.save();cx.globalAlpha=.05;cx.fillStyle='#88C441';const s=Math.max(W,H)*.9/752;cx.translate(W-554*s*.55,H-752*s*.85);cx.scale(s,s);cx.fill(MASCOT,'evenodd');cx.restore();
+  // ground line
+  cx.fillStyle='rgba(255,255,255,.06)';cx.fillRect(0,H-basketBottom()+46,W,2);}
+function eggPath(r){cx.beginPath();cx.ellipse(0,0,r*.78,r,0,0,Math.PI*2);}
+function drawEgg(e){cx.save();cx.translate(e.x,e.y);cx.rotate(e.rot);
+  if(e.gold){cx.shadowColor='rgba(240,200,60,.8)';cx.shadowBlur=18;}
+  eggPath(e.r);const g=cx.createRadialGradient(-e.r*.3,-e.r*.45,e.r*.1,0,0,e.r*1.1);
+  if(e.gold){g.addColorStop(0,'#FFF3B0');g.addColorStop(.6,'#F2C53D');g.addColorStop(1,'#C9961A');}
+  else{g.addColorStop(0,'#fff');g.addColorStop(.35,e.t.c);g.addColorStop(1,e.t.s);}
+  cx.fillStyle=g;cx.fill();cx.restore();}
+function drawBasket(){const b=basket,w=b.w,h=w*.46,x=b.x-w/2,y=b.y-h*.2;
+  cx.save();
+  // shadow
+  cx.fillStyle='rgba(0,0,0,.25)';cx.beginPath();cx.ellipse(b.x,y+h+6,w*.48,8,0,0,Math.PI*2);cx.fill();
+  // body
+  cx.beginPath();cx.moveTo(x,y);cx.lineTo(x+w,y);cx.lineTo(x+w*.88,y+h);cx.quadraticCurveTo(b.x,y+h+10,x+w*.12,y+h);cx.closePath();
+  const g=cx.createLinearGradient(0,y,0,y+h);g.addColorStop(0,'#9BD350');g.addColorStop(1,'#6FA834');cx.fillStyle=g;cx.fill();
+  // weave
+  cx.save();cx.clip();cx.strokeStyle='rgba(15,46,30,.22)';cx.lineWidth=2;
+  for(let i=1;i<4;i++){const yy=y+h*i/4;cx.beginPath();cx.moveTo(x,yy);cx.lineTo(x+w,yy);cx.stroke();}
+  for(let i=-2;i<14;i++){const xx=x+i*w/11;cx.beginPath();cx.moveTo(xx,y);cx.lineTo(xx+w*.06,y+h);cx.stroke();}
+  cx.restore();
+  // rim
+  cx.fillStyle='#0F2E1E';cx.globalAlpha=.25;cx.fillRect(x-4,y-2,w+8,4);cx.globalAlpha=1;
+  cx.fillStyle='#B6E07A';cx.beginPath();cx.roundRect?cx.roundRect(x-6,y-8,w+12,12,6):cx.rect(x-6,y-8,w+12,12);cx.fill();
+  // badge (mascot)
+  const bs=h*.62;cx.save();cx.translate(b.x-bs*554/752/2,y+h*.22);cx.scale(bs/752,bs/752);cx.fillStyle='#0F2E1E';cx.fill(MASCOT,'evenodd');cx.restore();
+  cx.restore();}
+function drawFx(dt){fx=fx.filter(f=>(f.t+=dt)<f.d);fx.forEach(f=>{const k=f.t/f.d;cx.save();cx.globalAlpha=1-k;
+  if(f.k==='splat'){cx.translate(f.x,f.y);cx.fillStyle='#F7F3E8';cx.beginPath();for(let i=0;i<9;i++){const a=i/9*Math.PI*2,rr=f.r*(1.2+((i%2)?.5:0))*(.6+k*.6);cx.lineTo(Math.cos(a)*rr*1.4,Math.sin(a)*rr*.45);}cx.closePath();cx.fill();cx.fillStyle='#F5B82E';cx.beginPath();cx.ellipse(0,-2,f.r*.45,f.r*.3,0,0,Math.PI*2);cx.fill();}
+  if(f.k==='plus'){cx.fillStyle=f.gold?'#F2C53D':'#88C441';cx.font='700 '+(f.gold?28:22)+'px "Readex Pro",sans-serif';cx.textAlign='center';cx.direction='ltr';cx.fillText(f.txt,f.x,f.y-k*40);}
+  cx.restore();});}
+
+/* ---------- loop ---------- */
+function step(ts){const dt=Math.min(.033,(ts-(last||ts))/1000);last=ts;
+  if(state==='play'){
+    if(keys.ArrowLeft)basket.tx-=700*dt; if(keys.ArrowRight)basket.tx+=700*dt;
+    basket.tx=Math.min(Math.max(basket.tx,basket.w/2),W-basket.w/2);
+    basket.x+=(basket.tx-basket.x)*Math.min(1,dt*18);
+    spawnT-=dt; if(spawnT<=0){spawn();spawnT=interval()*(.75+Math.random()*.5);}
+    const top=basket.y-basket.w*.46*.2, half=basket.w/2;
+    eggs.forEach(e=>{e.vy+=40*dt;e.y+=e.vy*dt;e.rot+=e.vr*dt;
+      if(!e.done&&e.y+e.r*.6>=top&&e.y-e.r<top+14&&Math.abs(e.x-basket.x)<half-4){e.done=1;const pts=e.gold?5:1;score+=pts;caught++;fx.push({k:'plus',x:e.x,y:top-10,t:0,d:.7,txt:'+'+AR(pts),gold:e.gold});e.gold?sGold():sCatch();
+        if(caught%PER_LEVEL===0){level++;sLevel();toast('المرحلة '+AR(level));}paintHud();}
+      else if(!e.done&&e.y-e.r>H-basketBottom()+46){e.done=1;lives--;fx.push({k:'splat',x:e.x,y:H-basketBottom()+46,r:e.r,t:0,d:1.2});sBreak();shake=.25;try{navigator.vibrate&&navigator.vibrate(60)}catch(_){}paintHud();if(lives<=0)over();}
+    });
+    eggs=eggs.filter(e=>!e.done);
+  }
+  cx.save();if(shake>0){shake-=dt;cx.translate((Math.random()-.5)*8,(Math.random()-.5)*6);}
+  drawBg();eggs.forEach(drawEgg);drawFx(dt);if(basket)drawBasket();cx.restore();
+  requestAnimationFrame(step);}
+
+function start(){if(state==='play')return;if(!player){const er=readForm();$('f-err').textContent=er||'';if(er)return;showMe();}t0=performance.now();try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();ac.resume&&ac.resume()}catch(e){}
+  reset();state='play';$('s-start').classList.remove('on');$('s-over').classList.remove('on');$('hud').style.display='flex';toast('المرحلة ١');}
+function over(){state='over';const nb=score>best;if(nb){best=score;try{localStorage.setItem('gedo_best',best)}catch(e){}}
+  $('o-sc').textContent=AR(score);$('o-best').textContent=nb&&score>0?'رقم قياسي جديد!':'أحسن نتيجة: '+AR(best);
+  const msgs=['البيض وقع! جدو علي زعلان شوية','قربت! جرّب تاني','إيدك تتلف في حرير','ده إنت بطل البيض'];
+  $('o-msg').textContent=score<10?msgs[0]:score<25?msgs[1]:score<50?msgs[2]:msgs[3];
+  submit();
+  setTimeout(()=>{$('s-over').classList.add('on');$('hud').style.display='none';},500);}
+$('b-start').onclick=start;$('b-again').onclick=start;
+addEventListener('resize',resize);resize();reset();showMe();loadTop();requestAnimationFrame(step);
+window.__gedo={get state(){return state},get level(){return level},get score(){return score},get lives(){return lives},get eggs(){return eggs},start,force(l){level=l}};
+})();
+</script>
+</body>
+</html>
