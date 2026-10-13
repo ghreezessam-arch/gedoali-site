@@ -64,7 +64,7 @@ canvas{display:block;width:100vw;height:100vh;height:100dvh}
 <section class="scr on tall" id="s-start">
   <svg viewBox="0 0 554 752" aria-hidden="true"><path class="mp" fill-rule="evenodd"/></svg>
   <h1>الحق المنتجات!</h1>
-  <p>جدو علي بيرمي البيض والجبن والعسل من فوق — امسكهم في السلة قبل ما يقعوا. كل ما تعدّي مرحلة بيقعوا أسرع.</p>
+  <p>جدو علي بيرمي البيض والجبن والعسل من فوق — امسكهم في السلة قبل ما يقعوا. كل مرحلة بيقعوا أسرع… والسلة بتصغر!</p>
   <div class="how" style="margin-top:6px">🥚 ١ · 🧀 ٢ · 🫙 طحينة ٢ · 🍯 عسل ٣ · بيضة دهبي ٥</div>
   <div class="form" id="reg">
     <input id="f-name" placeholder="اسمك" autocomplete="name" maxlength="40">
@@ -128,7 +128,9 @@ function submit(){if(!player)return;$('o-saved').textContent='بنسجّل نت�
 
 function speed(){return 150+ (level-1)*48}              // px/s fall speed
 function interval(){return Math.max(.38,1.25-(level-1)*.09)} // s between eggs
-function reset(){basket={x:W/2,y:H-basketBottom(),w:Math.min(150,W*.36),tx:W/2};eggs=[];fx=[];score=0;caught=0;level=1;lives=3;spawnT=.6;paintHud();}
+function baseW(){return Math.min(150,W*.36)}
+function targetW(){const b=baseW();return Math.max(b*.42,b*(1-(level-1)*.07))}   // السلة بتصغر 7% كل مرحلة لحد 42%
+function reset(){basket={x:W/2,y:H-basketBottom(),w:baseW(),tx:W/2};eggs=[];fx=[];score=0;caught=0;level=1;lives=3;spawnT=.6;paintHud();}
 function paintHud(){$('sc').textContent=AR(score);$('lv').textContent='المرحلة '+AR(level);[...$('lives').children].forEach((n,i)=>n.classList.toggle('off',i>=lives));}
 function toast(t){const n=$('toast');n.textContent=t;n.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>n.classList.remove('on'),1100);}
 const KINDS=[['egg',1,44],['white',2,16],['roumy',2,15],['tahini',2,9],['honey',3,11],['gold',5,5]];
@@ -192,11 +194,12 @@ function step(ts){const dt=Math.min(.033,(ts-(last||ts))/1000);last=ts;
     if(keys.ArrowLeft)basket.tx-=700*dt; if(keys.ArrowRight)basket.tx+=700*dt;
     basket.tx=Math.min(Math.max(basket.tx,basket.w/2),W-basket.w/2);
     basket.x+=(basket.tx-basket.x)*Math.min(1,dt*18);
+    basket.w+=(targetW()-basket.w)*Math.min(1,dt*4);
     spawnT-=dt; if(spawnT<=0){spawn();spawnT=interval()*(.75+Math.random()*.5);}
     const top=basket.y-basket.w*.46*.2, half=basket.w/2;
     eggs.forEach(e=>{e.vy+=40*dt;e.y+=e.vy*dt;e.rot+=e.vr*dt;
       if(!e.done&&e.y+e.r*.6>=top&&e.y-e.r<top+14&&Math.abs(e.x-basket.x)<half-4){e.done=1;const pts=e.pts||1;score+=pts;caught++;fx.push({k:'plus',x:e.x,y:top-10,t:0,d:.7,txt:'+'+AR(pts),gold:pts>=3});pts>=3?sGold():sCatch();
-        if(caught%PER_LEVEL===0){level++;sLevel();toast('المرحلة '+AR(level));}paintHud();}
+        if(caught%PER_LEVEL===0){level++;sLevel();toast('المرحلة '+AR(level));if(targetW()>baseW()*.42+1)setTimeout(()=>toast('السلة صغرت!'),1200);}paintHud();}
       else if(!e.done&&e.y-e.r>H-basketBottom()+46){e.done=1;lives--;fx.push({k:(e.kind==='egg'||e.kind==='gold')?'splat':'thud',x:e.x,y:H-basketBottom()+46,r:e.r,t:0,d:1.2});sBreak();shake=.25;try{navigator.vibrate&&navigator.vibrate(60)}catch(_){}paintHud();if(lives<=0)over();}
     });
     eggs=eggs.filter(e=>!e.done);
