@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
-<title>gedoali — الحق البيض</title>
+<title>gedoali — الحق المنتجات</title>
 <meta name="theme-color" content="#0F2E1E">
 <meta name="description" content="لعبة جدو علي: الحق البيض في السلة قبل ما يقع!">
-<meta property="og:title" content="الحق البيض مع جدو علي">
+<meta property="og:title" content="الحق المنتجات مع جدو علي">
 <meta property="og:description" content="لعبة خفيفة من جدو علي — كل ما تكسب، البيض بيقع أسرع.">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -63,8 +63,9 @@ canvas{display:block;width:100vw;height:100vh;height:100dvh}
 
 <section class="scr on tall" id="s-start">
   <svg viewBox="0 0 554 752" aria-hidden="true"><path class="mp" fill-rule="evenodd"/></svg>
-  <h1>الحق البيض!</h1>
-  <p>جدو علي بيرمي البيض من فوق — امسكه في السلة قبل ما يقع. كل ما تعدّي مرحلة البيض بيقع أسرع.</p>
+  <h1>الحق المنتجات!</h1>
+  <p>جدو علي بيرمي البيض والجبن والعسل من فوق — امسكهم في السلة قبل ما يقعوا. كل ما تعدّي مرحلة بيقعوا أسرع.</p>
+  <div class="how" style="margin-top:6px">🥚 ١ · 🧀 ٢ · 🫙 طحينة ٢ · 🍯 عسل ٣ · بيضة دهبي ٥</div>
   <div class="form" id="reg">
     <input id="f-name" placeholder="اسمك" autocomplete="name" maxlength="40">
     <input id="f-phone" class="ph" placeholder="رقم الموبايل" inputmode="tel" autocomplete="tel" maxlength="14">
@@ -80,7 +81,7 @@ canvas{display:block;width:100vw;height:100vh;height:100dvh}
 
 <section class="scr" id="s-over">
   <svg viewBox="0 0 554 752" aria-hidden="true"><path class="mp" fill-rule="evenodd"/></svg>
-  <p id="o-msg">الحق! البيض وقع</p>
+  <p id="o-msg">الحق! المنتجات وقعت</p>
   <div class="big" id="o-sc">0</div>
   <div class="best" id="o-best"></div>
   <div class="saved" id="o-saved"></div>
@@ -130,7 +131,9 @@ function interval(){return Math.max(.38,1.25-(level-1)*.09)} // s between eggs
 function reset(){basket={x:W/2,y:H-basketBottom(),w:Math.min(150,W*.36),tx:W/2};eggs=[];fx=[];score=0;caught=0;level=1;lives=3;spawnT=.6;paintHud();}
 function paintHud(){$('sc').textContent=AR(score);$('lv').textContent='المرحلة '+AR(level);[...$('lives').children].forEach((n,i)=>n.classList.toggle('off',i>=lives));}
 function toast(t){const n=$('toast');n.textContent=t;n.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>n.classList.remove('on'),1100);}
-function spawn(){const r=Math.max(15,Math.min(20,W*.045));const gold=level>=2&&Math.random()<.08;const t=EGGS[(Math.random()*3)|0];eggs.push({x:r+Math.random()*(W-2*r),y:-r*1.4,r,vy:speed()*(.9+Math.random()*.25),rot:(Math.random()-.5)*.6,vr:(Math.random()-.5)*1.5,gold,t});}
+const KINDS=[['egg',1,44],['white',2,16],['roumy',2,15],['tahini',2,9],['honey',3,11],['gold',5,5]];
+function pick(){const ks=KINDS.filter(k=>k[0]!=='gold'||level>=2);let t=ks.reduce((a,k)=>a+k[2],0)*Math.random();for(const k of ks){if((t-=k[2])<=0)return k}return ks[0]}
+function spawn(){const r=Math.max(16,Math.min(22,W*.05));const k=pick();const t=EGGS[(Math.random()*3)|0];eggs.push({x:r*1.2+Math.random()*(W-2.4*r),y:-r*1.6,r,vy:speed()*(.9+Math.random()*.25),rot:(Math.random()-.5)*.6,vr:(Math.random()-.5)*(k[0]==='egg'||k[0]==='gold'?1.5:.8),kind:k[0],pts:k[1],gold:k[0]==='gold',t});}
 
 /* ---------- input ---------- */
 function setX(px){if(basket)basket.tx=px;}
@@ -144,6 +147,15 @@ function drawBg(){cx.fillStyle='#0F2E1E';cx.fillRect(0,0,W,H);
   // ground line
   cx.fillStyle='rgba(255,255,255,.06)';cx.fillRect(0,H-basketBottom()+46,W,2);}
 function eggPath(r){cx.beginPath();cx.ellipse(0,0,r*.78,r,0,0,Math.PI*2);}
+function rr(x,y,w,h,r){cx.beginPath();cx.moveTo(x+r,y);cx.arcTo(x+w,y,x+w,y+h,r);cx.arcTo(x+w,y+h,x,y+h,r);cx.arcTo(x,y+h,x,y,r);cx.arcTo(x,y,x+w,y,r);cx.closePath();}
+function drawItem(e){if(e.kind==='egg'||e.kind==='gold')return drawEgg(e);const r=e.r;cx.save();cx.translate(e.x,e.y);cx.rotate(e.rot);
+  cx.shadowColor='rgba(0,0,0,.25)';cx.shadowBlur=6;cx.shadowOffsetY=3;
+  if(e.kind==='white'){rr(-r*1.05,-r*.7,r*2.1,r*1.4,r*.25);const g=cx.createLinearGradient(0,-r,0,r);g.addColorStop(0,'#FFFFFF');g.addColorStop(1,'#E9E3D3');cx.fillStyle=g;cx.fill();cx.shadowColor='transparent';cx.fillStyle='rgba(15,46,30,.08)';cx.fillRect(-r*1.05,r*.25,r*2.1,r*.45);}
+  else if(e.kind==='roumy'){cx.beginPath();cx.moveTo(-r*1.15,r*.65);cx.lineTo(r*1.15,r*.65);cx.lineTo(r*.55,-r*.8);cx.closePath();const g=cx.createLinearGradient(0,-r,0,r);g.addColorStop(0,'#F6D777');g.addColorStop(1,'#E2B23C');cx.fillStyle=g;cx.fill();cx.shadowColor='transparent';cx.fillStyle='rgba(160,110,20,.35)';[[-.4,.3,.16],[.25,.1,.12],[.45,.45,.1],[-.05,.48,.09]].forEach(h=>{cx.beginPath();cx.arc(h[0]*r,h[1]*r,h[2]*r,0,7);cx.fill();});}
+  else{const honey=e.kind==='honey';rr(-r*.75,-r*.7,r*1.5,r*1.65,r*.3);const g=cx.createLinearGradient(-r,0,r,0);if(honey){g.addColorStop(0,'#F0A21B');g.addColorStop(.5,'#FFC94A');g.addColorStop(1,'#C97A06');}else{g.addColorStop(0,'#D9C3A0');g.addColorStop(.5,'#EEDFC4');g.addColorStop(1,'#BFA67E');}cx.fillStyle=g;cx.fill();cx.shadowColor='transparent';
+    cx.fillStyle='#0F2E1E';rr(-r*.82,-r*1.02,r*1.64,r*.4,r*.12);cx.fill();cx.fillStyle='#88C441';cx.fillRect(-r*.82,-r*.78,r*1.64,r*.08);
+    cx.fillStyle='#F2EEE4';rr(-r*.55,-r*.25,r*1.1,r*.75,r*.12);cx.fill();const s=r*.55/752;cx.save();cx.translate(-554*s/2,-r*.2);cx.scale(s,s);cx.fillStyle='#0F2E1E';cx.fill(MASCOT,'evenodd');cx.restore();}
+  cx.restore();}
 function drawEgg(e){cx.save();cx.translate(e.x,e.y);cx.rotate(e.rot);
   if(e.gold){cx.shadowColor='rgba(240,200,60,.8)';cx.shadowBlur=18;}
   eggPath(e.r);const g=cx.createRadialGradient(-e.r*.3,-e.r*.45,e.r*.1,0,0,e.r*1.1);
@@ -170,6 +182,7 @@ function drawBasket(){const b=basket,w=b.w,h=w*.46,x=b.x-w/2,y=b.y-h*.2;
   cx.restore();}
 function drawFx(dt){fx=fx.filter(f=>(f.t+=dt)<f.d);fx.forEach(f=>{const k=f.t/f.d;cx.save();cx.globalAlpha=1-k;
   if(f.k==='splat'){cx.translate(f.x,f.y);cx.fillStyle='#F7F3E8';cx.beginPath();for(let i=0;i<9;i++){const a=i/9*Math.PI*2,rr=f.r*(1.2+((i%2)?.5:0))*(.6+k*.6);cx.lineTo(Math.cos(a)*rr*1.4,Math.sin(a)*rr*.45);}cx.closePath();cx.fill();cx.fillStyle='#F5B82E';cx.beginPath();cx.ellipse(0,-2,f.r*.45,f.r*.3,0,0,Math.PI*2);cx.fill();}
+  if(f.k==='thud'){cx.translate(f.x,f.y);cx.fillStyle='rgba(242,238,228,.5)';for(let i=0;i<6;i++){const a=Math.PI+i/5*Math.PI;cx.beginPath();cx.arc(Math.cos(a)*f.r*(1+k*1.5),Math.sin(a)*f.r*.6*(1+k),3,0,7);cx.fill();}}
   if(f.k==='plus'){cx.fillStyle=f.gold?'#F2C53D':'#88C441';cx.font='700 '+(f.gold?28:22)+'px "Readex Pro",sans-serif';cx.textAlign='center';cx.direction='ltr';cx.fillText(f.txt,f.x,f.y-k*40);}
   cx.restore();});}
 
@@ -182,27 +195,27 @@ function step(ts){const dt=Math.min(.033,(ts-(last||ts))/1000);last=ts;
     spawnT-=dt; if(spawnT<=0){spawn();spawnT=interval()*(.75+Math.random()*.5);}
     const top=basket.y-basket.w*.46*.2, half=basket.w/2;
     eggs.forEach(e=>{e.vy+=40*dt;e.y+=e.vy*dt;e.rot+=e.vr*dt;
-      if(!e.done&&e.y+e.r*.6>=top&&e.y-e.r<top+14&&Math.abs(e.x-basket.x)<half-4){e.done=1;const pts=e.gold?5:1;score+=pts;caught++;fx.push({k:'plus',x:e.x,y:top-10,t:0,d:.7,txt:'+'+AR(pts),gold:e.gold});e.gold?sGold():sCatch();
+      if(!e.done&&e.y+e.r*.6>=top&&e.y-e.r<top+14&&Math.abs(e.x-basket.x)<half-4){e.done=1;const pts=e.pts||1;score+=pts;caught++;fx.push({k:'plus',x:e.x,y:top-10,t:0,d:.7,txt:'+'+AR(pts),gold:pts>=3});pts>=3?sGold():sCatch();
         if(caught%PER_LEVEL===0){level++;sLevel();toast('المرحلة '+AR(level));}paintHud();}
-      else if(!e.done&&e.y-e.r>H-basketBottom()+46){e.done=1;lives--;fx.push({k:'splat',x:e.x,y:H-basketBottom()+46,r:e.r,t:0,d:1.2});sBreak();shake=.25;try{navigator.vibrate&&navigator.vibrate(60)}catch(_){}paintHud();if(lives<=0)over();}
+      else if(!e.done&&e.y-e.r>H-basketBottom()+46){e.done=1;lives--;fx.push({k:(e.kind==='egg'||e.kind==='gold')?'splat':'thud',x:e.x,y:H-basketBottom()+46,r:e.r,t:0,d:1.2});sBreak();shake=.25;try{navigator.vibrate&&navigator.vibrate(60)}catch(_){}paintHud();if(lives<=0)over();}
     });
     eggs=eggs.filter(e=>!e.done);
   }
   cx.save();if(shake>0){shake-=dt;cx.translate((Math.random()-.5)*8,(Math.random()-.5)*6);}
-  drawBg();eggs.forEach(drawEgg);drawFx(dt);if(basket)drawBasket();cx.restore();
+  drawBg();eggs.forEach(drawItem);drawFx(dt);if(basket)drawBasket();cx.restore();
   requestAnimationFrame(step);}
 
 function start(){if(state==='play')return;if(!player){const er=readForm();$('f-err').textContent=er||'';if(er)return;showMe();}t0=performance.now();try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();ac.resume&&ac.resume()}catch(e){}
   reset();state='play';$('s-start').classList.remove('on');$('s-over').classList.remove('on');$('hud').style.display='flex';toast('المرحلة ١');}
 function over(){state='over';const nb=score>best;if(nb){best=score;try{localStorage.setItem('gedo_best',best)}catch(e){}}
   $('o-sc').textContent=AR(score);$('o-best').textContent=nb&&score>0?'رقم قياسي جديد!':'أحسن نتيجة: '+AR(best);
-  const msgs=['البيض وقع! جدو علي زعلان شوية','قربت! جرّب تاني','إيدك تتلف في حرير','ده إنت بطل البيض'];
+  const msgs=['المنتجات وقعت! جدو علي زعلان شوية','قربت! جرّب تاني','إيدك تتلف في حرير','ده إنت بطل البيض'];
   $('o-msg').textContent=score<10?msgs[0]:score<25?msgs[1]:score<50?msgs[2]:msgs[3];
   submit();
   setTimeout(()=>{$('s-over').classList.add('on');$('hud').style.display='none';},500);}
 $('b-start').onclick=start;$('b-again').onclick=start;
 addEventListener('resize',resize);resize();reset();showMe();loadTop();requestAnimationFrame(step);
-window.__gedo={get state(){return state},get level(){return level},get score(){return score},get lives(){return lives},get eggs(){return eggs},start,force(l){level=l}};
+window.__gedo={get state(){return state},get level(){return level},get score(){return score},get lives(){return lives},start};
 })();
 </script>
 </body>
